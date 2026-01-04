@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qur'on Pomodoro - Qur'on o'qish uchun aqlli timer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+    <style>
+        :root {
+            --neon-green: #00ff9d;
+            --neon-blue: #00b3ff;
+            --neon-purple: #9d00ff;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            color: #f1f5f9;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 179, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(157, 0, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(0, 255, 157, 0.05) 0%, transparent 50%);
+            z-index: -1;
+        }
+        
+        .glass-effect {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .glass-effect-dark {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .neon-text {
+            text-shadow: 
+                0 0 10px currentColor,
+                0 0 20px currentColor,
+                0 0 40px currentColor;
+        }
+        
+        .neon-border {
+            box-shadow: 
+                0 0 10px var(--neon-blue),
+                0 0 20px var(--neon-blue),
+                inset 0 0 10px rgba(0, 179, 255, 0.1);
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .btn-press {
+            transition: all 0.1s ease;
+        }
+        
+        .btn-press:active {
+            transform: scale(0.95);
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.5s;
+            transform-origin: 50% 50%;
+        }
+        
+        .typewriter {
+            overflow: hidden;
+            border-right: 3px solid var(--neon-green);
+            white-space: nowrap;
+            animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: var(--neon-green) }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .notification {
+            animation: notificationPop 0.3s ease-out;
+        }
+        
+        @keyframes notificationPop {
+            0% { transform: scale(0.8); opacity: 0; }
+            70% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .progress-fill {
+            transition: width 0.3s ease-out;
+        }
+        
+        .motivation-card {
+            animation: cardAppear 0.5s ease-out;
+        }
+        
+        @keyframes cardAppear {
+            0% { transform: translateY(20px) scale(0.95); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        
+        /* Audio visualization */
+        .audio-bar {
+            animation: audioWave 1.5s ease-in-out infinite;
+            animation-delay: calc(var(--i) * 0.1s);
+        }
+        
+        @keyframes audioWave {
+            0%, 100% { height: 5px; }
+            50% { height: 20px; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+    <!-- Header -->
+    <header class="w-full max-w-4xl text-center mb-6 fade-in">
+        <h1 class="text-3xl md:text-5xl font-bold mb-2">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#00ff9d] to-[#00b3ff] neon-text">Qur'on Pomodoro</span>
+        </h1>
+        <p class="text-lg md:text-xl text-slate-300">Qur'on o'qish uchun aqlli timer va motivatsiya dasturi</p>
+        <div class="flex justify-center items-center mt-4 space-x-4">
+            <div class="glass-effect-dark rounded-full px-4 py-2 flex items-center">
+                <i class="fas fa-clock text-[#00ff9d] mr-2"></i>
+                <span id="sessionCount">0</span> marta o'qildi
+            </div>
+            <div class="glass-effect-dark rounded-full px-4 py-2 flex items-center">
+                <i class="fas fa-hourglass-half text-[#00b3ff] mr-2"></i>
+                <span id="totalTime">0</span> daqiqa
+            </div>
+        </div>
+    </header>
+
+    <main class="w-full max-w-4xl">
+        <!-- Timer Section -->
+        <section class="glass-effect rounded-3xl p-6 md:p-8 mb-8 relative overflow-hidden fade-in">
+            <!-- Decorative elements -->
+            <div class="absolute top-0 left-0 w-24 h-24 bg-[#00ff9d] rounded-full -translate-x-12 -translate-y-12 opacity-10"></div>
+            <div class="absolute bottom-0 right-0 w-32 h-32 bg-[#9d00ff] rounded-full translate-x-16 translate-y-16 opacity-10"></div>
+            
+            <!-- Timer Display -->
+            <div class="flex flex-col items-center justify-center mb-8">
+                <div class="relative w-64 h-64 md:w-80 md:h-80 mb-6">
+                    <!-- Progress ring -->
+                    <svg class="progress-ring w-full h-full" width="320" height="320">
+                        <circle class="text-slate-700" stroke="currentColor" stroke-width="12" fill="transparent" r="150" cx="160" cy="160"/>
+                        <circle id="progressCircle" class="progress-ring-circle" stroke="url(#gradient)" stroke-width="12" stroke-linecap="round" fill="transparent" r="150" cx="160" cy="160" stroke-dasharray="942" stroke-dashoffset="942"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#00ff9d" />
+                                <stop offset="100%" stop-color="#00b3ff" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    
+                    <!-- Timer text -->
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <div id="timeDisplay" class="text-6xl md:text-7xl font-bold mb-2">
+                            25:00
+                        </div>
+                        <div id="timerStatus" class="text-xl text-slate-300">
+                            Tayyorlaning
+                        </div>
+                        <div id="phaseIndicator" class="mt-4 px-4 py-1 rounded-full text-sm glass-effect-dark">
+                            Qur'on o'qish vaqti
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Timer Controls -->
+                <div class="flex space-x-6 mb-8">
+                    <button id="startBtn" class="btn-press glass-effect hover:neon-border rounded-2xl px-8 py-4 flex items-center justify-center text-lg font-semibold transition-all duration-300 hover:scale-105 active:scale-95">
+                        <i class="fas fa-play mr-3"></i> Boshlash
+                    </button>
+                    <button id="pauseBtn" class="btn-press glass-effect hover:neon-border rounded-2xl px-8 py-4 flex items-center justify-center text-lg font-semibold transition-all duration-300 hover:scale-105 active:scale-95 hidden">
+                        <i class="fas fa-pause mr-3"></i> Pause
+                    </button>
+                    <button id="resetBtn" class="btn-press glass-effect rounded-2xl px-8 py-4 flex items-center justify-center text-lg font-semibold transition-all duration-300 hover:scale-105 active:scale-95">
+                        <i class="fas fa-redo mr-3"></i> Qayta
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Time Settings -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-effect-dark rounded-2xl p-6 slide-in" style="animation-delay: 0.1s">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-cog text-[#00ff9d] mr-3"></i> Timer sozlamalari
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-slate-300 mb-2">Qur'on o'qish vaqti (daqiqa)</label>
+                            <div class="flex items-center">
+                                <input type="number" id="focusTime" min="1" max="120" value="25" class="flex-1 glass-effect rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#00ff9d] transition-all">
+                                <div class="ml-4 flex space-x-2">
+                                    <button class="time-adjust btn-press glass-effect w-10 h-10 rounded-xl flex items-center justify-center" data-change="-5">-5</button>
+                                    <button class="time-adjust btn-press glass-effect w-10 h-10 rounded-xl flex items-center justify-center" data-change="-1">-1</button>
+                                    <button class="time-adjust btn-press glass-effect w-10 h-10 rounded-xl flex items-center justify-center" data-change="+1">+1</button>
+                                    <button class="time-adjust btn-press glass-effect w-10 h-10 rounded-xl flex items-center justify-center" data-change="+5">+5</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 mb-2">Tanaffus vaqti (daqiqa)</label>
+                            <div class="flex items-center">
+                                <input type="number" id="breakTime" min="1" max="30" value="5" class="flex-1 glass-effect rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#00b3ff] transition-all">
+                                <div class="ml-4 flex space-x-2">
+                                    <button class="time-adjust btn-press glass-effect w-10 h-10 rounded-xl flex items-center justify-center" data-change="-1" data-target="breakTime">-1</button>
+                                    <button class="time-adjust btn-press glass-effect w-10 h-10 rounded-xl flex items-center justify-center" data-change="+1" data-target="breakTime">+1</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Motivation Display -->
+                <div class="md:col-span-2 glass-effect-dark rounded-2xl p-6 slide-in" style="animation-delay: 0.2s">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-heart text-[#9d00ff] mr-3"></i> Qur'on motivatsiyasi
+                    </h3>
+                    <div id="motivationText" class="text-lg md:text-xl h-32 overflow-y-auto p-2 motivation-card">
+                        Qur'on o'qish - bu Alloh bilan suhbat. Har bir harf uchun savob va nur bor. Keling, bu vaqtni borlig'imizning eng foydli daqiqalariga aylantiramiz!
+                    </div>
+                    <div class="mt-4 flex justify-between items-center">
+                        <div class="text-slate-400 text-sm">
+                            <i class="fas fa-info-circle mr-1"></i> Har 5 daqiqada yangi motivatsiya
+                        </div>
+                        <button id="nextMotivation" class="btn-press glass-effect rounded-xl px-4 py-2 text-sm hover:scale-105 active:scale-95 transition-all">
+                            <i class="fas fa-forward mr-2"></i> Keyingisi
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Statistics Section -->
+        <section class="glass-effect rounded-3xl p-6 md:p-8 mb-8 fade-in" style="animation-delay: 0.3s">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-chart-line text-[#00ff9d] mr-3"></i> Statistika
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-effect-dark rounded-2xl p-6 flex flex-col items-center justify-center">
+                    <div class="text-4xl font-bold text-[#00ff9d] mb-2" id="completedSessions">0</div>
+                    <div class="text-slate-300">Yakunlangan sessiyalar</div>
+                </div>
+                <div class="glass-effect-dark rounded-2xl p-6 flex flex-col items-center justify-center">
+                    <div class="text-4xl font-bold text-[#00b3ff] mb-2" id="totalMinutes">0</div>
+                    <div class="text-slate-300">Umumiy o'qish vaqti</div>
+                </div>
+                <div class="glass-effect-dark rounded-2xl p-6 flex flex-col items-center justify-center">
+                    <div class="text-4xl font-bold text-[#9d00ff] mb-2" id="streakDays">0</div>
+                    <div class="text-slate-300">Ketma-ket kunlar</div>
+                </div>
+            </div>
+            <div class="mt-6">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="text-slate-300">Bugungi maqsadingiz</div>
+                    <div class="text-slate-300"><span id="todayGoalProgress">0</span>/<span id="todayGoal">3</span> sessiya</div>
+                </div>
+                <div class="w-full glass-effect-dark rounded-full h-4 overflow-hidden">
+                    <div id="goalProgressBar" class="progress-fill h-full rounded-full bg-gradient-to-r from-[#00ff9d] to-[#00b3ff]" style="width: 0%"></div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Tips Section -->
+        <section class="glass-effect rounded-3xl p-6 md:p-8 fade-in" style="animation-delay: 0.4s">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-lightbulb text-[#00b3ff] mr-3"></i> Qur'on yodlash uchun maslahatlar
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="glass-effect-dark rounded-2xl p-5">
+                    <div class="text-3xl mb-3 text-[#00ff9d]">📖</div>
+                    <h3 class="font-semibold mb-2">Kichik suralardan boshlang</h3>
+                    <p class="text-slate-300 text-sm">Qisqa suralarni yodlash orqali muvaffaqiyat hissini qo'lga kiritib, keyin murakkabroqlariga o'ting.</p>
+                </div>
+                <div class="glass-effect-dark rounded-2xl p-5">
+                    <div class="text-3xl mb-3 text-[#00b3ff]">🔁</div>
+                    <h3 class="font-semibold mb-2">Takrorlash muhim</h3>
+                    <p class="text-slate-300 text-sm">Yodlaganingizni har kuni takrorlang. Takrorlash - yodlashning kalitidir.</p>
+                </div>
+                <div class="glass-effect-dark rounded-2xl p-5">
+                    <div class="text-3xl mb-3 text-[#9d00ff]">🎯</div>
+                    <h3 class="font-semibold mb-2">Ma'nosini tushunish</h3>
+                    <p class="text-slate-300 text-sm">Oyatlar ma'nosini tushunib yodlasangiz, u yaxshi yodingizda qoladi va amal qilish osonroq bo'ladi.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="mt-8 mb-4 text-center text-slate-400 text-sm">
+        <p>Qur'on Pomodoro &copy; 2025 - Qur'on o'qish va yodlashni osonlashtiradigan vosita</p>
+        <p class="mt-1">Har bir daqiqa Qur'on bilan o'tkazilgan vaqt - borlig'imizning eng qadrli daqiqalaridir</p>
+    </footer>
+    
+    <!-- Notification -->
+    <div id="notification" class="fixed bottom-4 right-4 glass-effect rounded-2xl p-4 max-w-sm hidden notification z-50">
+        <div class="flex items-start">
+            <div class="mr-3 text-2xl">
+                <i class="fas fa-bell text-[#00ff9d]"></i>
+            </div>
+            <div>
+                <h4 class="font-semibold" id="notificationTitle">Vaqt tugadi!</h4>
+                <p id="notificationMessage" class="text-slate-300 text-sm mt-1">Qur'on o'qish vaqti tugadi. Endi tanaffus vaqtı.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Audio Visualization -->
+    <div id="audioVisualization" class="fixed bottom-0 left-0 w-full h-20 hidden justify-center items-center z-40">
+        <div class="flex items-end space-x-1">
+            <div class="audio-bar w-2 bg-gradient-to-t from-[#00ff9d] to-[#00b3ff] rounded-t-lg" style="--i: 0"></div>
+            <div class="audio-bar w-2 bg-gradient-to-t from-[#00ff9d] to-[#00b3ff] rounded-t-lg" style="--i: 1"></div>
+            <div class="audio-bar w-2 bg-gradient-to-t from-[#00ff9d] to-[#00b3ff] rounded-t-lg" style="--i: 2"></div>
+            <div class="audio-bar w-2 bg-gradient-to-t from-[#00ff9d] to-[#00b3ff] rounded-t-lg" style="--i: 3"></div>
+            <div class="audio-bar w-2 bg-gradient-to-t from-[#00ff9d] to-[#00b3ff] rounded-t-lg" style="--i: 4"></div>
+        </div>
+    </div>
+
+    <script>
+        // Application state
+        const state = {
+            timer: null,
+            isRunning: false,
+            isBreak: false,
+            timeLeft: 25 * 60, // 25 minutes in seconds
+            totalTime: 25 * 60,
+            startTime: null,
+            lastUpdate: null,
+            pausedTime: 0,
+            // Motivational quotes in Uzbek
+            motivations: [
+                "Qur'on - bu hayotingizning nuri. Har bir oyat sizni yoritib, to'g'ri yo'lga boshlaydi.",
+                "Har bir daqiqa Qur'on bilan o'tkazilgan vaqt - borlig'imizning eng qadrli daqiqalaridir.",
+                "Allohning so'zini o'qiganingizda, u sizga javob beradi, sizni eslaydi va sizga rahm qiladi.",
+                "Qur'on o'qish - bu ruhni tozalash, qalbni tinchlantirish va hayotga ma'no berishdir.",
+                "Har bir harf uchun savob. Oyatlarni tushunishga harakat qiling, bu sizni Allohga yaqinlashtiradi.",
+                "Qur'on - bu hayotingizning eng yaxshi do'sti. U sizni har qanday holatda ham himoya qiladi.",
+                "Qur'on o'qigan odamning yuragi yorug' bo'ladi, hayoti ma'no topadi.",
+                "Kunning eng yaxshi vaqtlaridan birini Qur'on o'qishga bag'ishlang. Bu sizning eng yaxshi sarmoyangiz bo'ladi.",
+                "Qur'on o'qish bilan band bo'lgan vaqtlaringiz - eng baxtli vaqtlaringizdir.",
+                "Har bir oyat sizga hayotiy dars beradi. Uni chuqur tushunishga harakat qiling.",
+                "Qur'on o'qiganingizda, farishtalar sizni o'rab oladi, tinchlik va rahm-atosingizga cho'madiradi.",
+                "Kichik suralardan boshlang. Har kuni yangi oyat yodlang. Vaqt o'tishi bilan ko'p narsani yod olgan bo'lasiz.",
+                "Qur'on - bu Alloh bilan suhbat. U sizga g'amxo'rlik qilish, yo'l-yo'riq ko'rsatish va himoya qilish uchun nozil qilindi.",
+                "Har bir tilovat qilganingizda, Alloh sizga savob yozadi, duoningizni eshitadi va sizga rahmatini yog'diradi.",
+                "Qur'onni muntazam o'qish - bu imonning belgisidir. Bu sizning Allohga bo'lgan muhabbatingizni oshiradi.",
+                "Har bir oyatda hayot uchun kerak bo'lgan donolik bor. Uni o'rganing va amalda qo'llang.",
+                "Qur'on o'qish ruhiy sog'liq uchun foydali. U tashvishlarni ketkazadi, tinchlik va mamnunlik olib keladi.",
+                "Qur'onni yod olish - bu eng ulug'ibodat. Alloh yod olgan har bir harf uchun mukofot beradi.",
+                "Qur'on o'qigan odamning hayoti o'zgaradi. U haqiqiy baxt va muvaffaqiyatni topadi.",
+                "Har bir sahifani o'qiganingizda, o'zingizni yaxshiroq odam his qilasiz. Qur'on sizni takomillashtiradi."
+            ],
+            currentMotivationIndex: 0,
+            sessionCount: 0,
+            totalMinutes: 0,
+            streakDays: 0,
+            todaySessions: 0,
+            todayGoal: 3,
+            lastSessionDate: null,
+            // Break motivations
+            breakMotivations: [
+                "Yaxshi tanaffus! Endi biroz dam oling va keyingi sessiyaga tayyorlaning.",
+                "Dam olish vaqti. Keling, nafas olish mashqlarini bajaraylik va keyin yana Qur'on o'qishga qaytamiz.",
+                "Tanaffus - bu kuch to'plash vaqtı. Keyingi sessiyaga yanada kuch-quvvat bilan kirish uchun hozir dam oling.",
+                "Dam olish ham ibodatdir. Allohga shukr ayting va ruhiy dam oling.",
+                "Tanaffus vaqtida Qur'on o'qiganingiz haqida o'ylab ko'ring va keyingi sessiyaga ruhiy tayyorlaning."
+            ],
+            // Sound handling
+            audioContext: null,
+            oscillator: null,
+            gainNode: null,
+            soundEnabled: true
+        };
+
+        // DOM Elements
+        const timeDisplay = document.getElementById('timeDisplay');
+        const timerStatus = document.getElementById('timerStatus');
+        const phaseIndicator = document.getElementById('phaseIndicator');
+        const progressCircle = document.getElementById('progressCircle');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const focusTimeInput = document.getElementById('focusTime');
+        const breakTimeInput = document.getElementById('breakTime');
+        const motivationText = document.getElementById('motivationText');
+        const nextMotivationBtn = document.getElementById('nextMotivation');
+        const sessionCountEl = document.getElementById('sessionCount');
+        const totalTimeEl = document.getElementById('totalTime');
+        const completedSessionsEl = document.getElementById('completedSessions');
+        const totalMinutesEl = document.getElementById('totalMinutes');
+        const streakDaysEl = document.getElementById('streakDays');
+        const todayGoalProgressEl = document.getElementById('todayGoalProgress');
+        const todayGoalEl = document.getElementById('todayGoal');
+        const goalProgressBar = document.getElementById('goalProgressBar');
+        const notification = document.getElementById('notification');
+        const notificationTitle = document.getElementById('notificationTitle');
+        const notificationMessage = document.getElementById('notificationMessage');
+        const audioVisualization = document.getElementById('audioVisualization');
+        const timeAdjustButtons = document.querySelectorAll('.time-adjust');
+
+        // Initialize
+        function init() {
+            loadFromLocalStorage();
+            setupEventListeners();
+            updateTimerDisplay();
+            updateMotivation();
+            updateStatistics();
+            updateGoalProgress();
+            
+            // Check if today is a new day for streak
+            checkStreak();
+            
+            // Start animation frame for timer
+            requestAnimationFrame(updateTimer);
+        }
+
+        // Load data from localStorage
+        function loadFromLocalStorage() {
+            const savedState = localStorage.getItem('quranPomodoroState');
+            if (savedState) {
+                const parsed = JSON.parse(savedState);
+                state.sessionCount = parsed.sessionCount || 0;
+                state.totalMinutes = parsed.totalMinutes || 0;
+                state.streakDays = parsed.streakDays || 0;
+                state.todaySessions = parsed.todaySessions || 0;
+                state.todayGoal = parsed.todayGoal || 3;
+                state.lastSessionDate = parsed.lastSessionDate || null;
+                state.currentMotivationIndex = parsed.currentMotivationIndex || 0;
+                
+                // Update inputs
+                focusTimeInput.value = parsed.focusTime || 25;
+                breakTimeInput.value = parsed.breakTime || 5;
+                
+                // Set initial time
+                state.timeLeft = (parseInt(focusTimeInput.value) || 25) * 60;
+                state.totalTime = state.timeLeft;
+            }
+        }
+
+        // Save data to localStorage
+        function saveToLocalStorage() {
+            const stateToSave = {
+                sessionCount: state.sessionCount,
+                totalMinutes: state.totalMinutes,
+                streakDays: state.streakDays,
+                todaySessions: state.todaySessions,
+                todayGoal: state.todayGoal,
+                lastSessionDate: state.lastSessionDate,
+                focusTime: parseInt(focusTimeInput.value) || 25,
+                breakTime: parseInt(breakTimeInput.value) || 5,
+                currentMotivationIndex: state.currentMotivationIndex
+            };
+            localStorage.setItem('quranPomodoroState', JSON.stringify(stateToSave));
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            startBtn.addEventListener('click', startTimer);
+            pauseBtn.addEventListener('click', pauseTimer);
+            resetBtn.addEventListener('click', resetTimer);
+            nextMotivationBtn.addEventListener('click', nextMotivation);
+            
+            focusTimeInput.addEventListener('change', function() {
+                let value = parseInt(this.value);
+                if (isNaN(value) || value < 1) value = 1;
+                if (value > 120) value = 120;
+                this.value = value;
+                if (!state.isRunning && !state.isBreak) {
+                    state.timeLeft = value * 60;
+                    state.totalTime = state.timeLeft;
+                    updateTimerDisplay();
+                }
+                saveToLocalStorage();
+            });
+            
+            breakTimeInput.addEventListener('change', function() {
+                let value = parseInt(this.value);
+                if (isNaN(value) || value < 1) value = 1;
+                if (value > 30) value = 30;
+                this.value = value;
+                saveToLocalStorage();
+            });
+            
+            // Time adjustment buttons
+            timeAdjustButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const change = parseInt(this.getAttribute('data-change'));
+                    const target = this.getAttribute('data-target') || 'focusTime';
+                    const input = document.getElementById(target);
+                    let value = parseInt(input.value) + change;
+                    
+                    // Validate
+                    if (target === 'focusTime') {
+                        if (value < 1) value = 1;
+                        if (value > 120) value = 120;
+                    } else {
+                        if (value < 1) value = 1;
+                        if (value > 30) value = 30;
+                    }
+                    
+                    input.value = value;
+                    
+                    // Update timer if not running and not break
+                    if (!state.isRunning && !state.isBreak && target === 'focusTime') {
+                        state.timeLeft = value * 60;
+                        state.totalTime = state.timeLeft;
+                        updateTimerDisplay();
+                    }
+                    
+                    // Trigger change event
+                    input.dispatchEvent(new Event('change'));
+                });
+            });
+            
+            // Prevent negative numbers in inputs
+            focusTimeInput.addEventListener('input', function() {
+                if (this.value < 1) this.value = 1;
+            });
+            
+            breakTimeInput.addEventListener('input', function() {
+                if (this.value < 1) this.value = 1;
+            });
+        }
+
+        // Timer functions
+        function startTimer() {
+            if (!state.isRunning) {
+                state.isRunning = true;
+                state.startTime = Date.now() - state.pausedTime;
+                state.lastUpdate = Date.now();
+                state.pausedTime = 0;
+                
+                // Update UI
+                startBtn.classList.add('hidden');
+                pauseBtn.classList.remove('hidden');
+                timerStatus.textContent = state.isBreak ? "Tanaffus davom etmoqda" : "Qur'on o'qish davom etmoqda";
+                
+                // Play sound if enabled
+                if (state.soundEnabled) {
+                    playStartSound();
+                }
+            }
+        }
+
+        function pauseTimer() {
+            if (state.isRunning) {
+                state.isRunning = false;
+                state.pausedTime = Date.now() - state.startTime;
+                
+                // Update UI
+                startBtn.classList.remove('hidden');
+                pauseBtn.classList.add('hidden');
+                timerStatus.textContent = "To'xtatilgan";
+            }
+        }
+
+        function resetTimer() {
+            state.isRunning = false;
+            state.isBreak = false;
+            state.timeLeft = (parseInt(focusTimeInput.value) || 25) * 60;
+            state.totalTime = state.timeLeft;
+            state.pausedTime = 0;
+            state.startTime = null;
+            state.lastUpdate = null;
+            
+            // Update UI
+            startBtn.classList.remove('hidden');
+            pauseBtn.classList.add('hidden');
+            timerStatus.textContent = "Tayyorlaning";
+            phaseIndicator.textContent = "Qur'on o'qish vaqti";
+            phaseIndicator.className = "mt-4 px-4 py-1 rounded-full text-sm glass-effect-dark";
+            
+            updateTimerDisplay();
+            
+            // Stop any sound
+            stopSound();
+        }
+
+        // Timer update using requestAnimationFrame
+        function updateTimer() {
+            if (state.isRunning) {
+                const now = Date.now();
+                const delta = (now - state.lastUpdate) / 1000; // Convert to seconds
+                
+                if (delta >= 1) {
+                    state.timeLeft -= Math.floor(delta);
+                    state.lastUpdate = now;
+                    
+                    // Check if timer reached zero
+                    if (state.timeLeft <= 0) {
+                        state.timeLeft = 0;
+                        timerFinished();
+                    }
+                    
+                    updateTimerDisplay();
+                }
+            }
+            
+            requestAnimationFrame(updateTimer);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(state.timeLeft / 60);
+            const seconds = state.timeLeft % 60;
+            
+            timeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Update progress circle
+            const progress = ((state.totalTime - state.timeLeft) / state.totalTime) * 942;
+            progressCircle.style.strokeDashoffset = 942 - progress;
+            
+            // Change color based on time left
+            if (state.timeLeft < 60 && state.isRunning) {
+                // Less than a minute left - pulse animation
+                timeDisplay.classList.add('pulse');
+                progressCircle.style.stroke = "#ff4757";
+            } else {
+                timeDisplay.classList.remove('pulse');
+                progressCircle.style.stroke = state.isBreak ? "url(#gradientBreak)" : "url(#gradient)";
+            }
+        }
+
+        function timerFinished() {
+            state.isRunning = false;
+            
+            if (!state.isBreak) {
+                // Focus time finished, start break
+                state.isBreak = true;
+                state.timeLeft = (parseInt(breakTimeInput.value) || 5) * 60;
+                state.totalTime = state.timeLeft;
+                
+                // Update statistics
+                state.sessionCount++;
+                state.todaySessions++;
+                const focusMinutes = parseInt(focusTimeInput.value) || 25;
+                state.totalMinutes += focusMinutes;
+                
+                // Update UI
+                timerStatus.textContent = "Tanaffus vaqti!";
+                phaseIndicator.textContent = "Tanaffus";
+                phaseIndicator.className = "mt-4 px-4 py-1 rounded-full text-sm bg-gradient-to-r from-[#9d00ff] to-[#00b3ff] text-white";
+                
+                // Show notification
+                showNotification("Tabriklaymiz!", "Qur'on o'qish sessiyasi tugadi! Endi {breakTime} daqiqa dam oling.".replace("{breakTime}", parseInt(breakTimeInput.value) || 5));
+                
+                // Play sound
+                playCompletionSound();
+                
+                // Update motivation for break
+                updateMotivation(true);
+                
+                // Update streak
+                updateStreak();
+            } else {
+                // Break finished, start focus time
+                state.isBreak = false;
+                state.timeLeft = (parseInt(focusTimeInput.value) || 25) * 60;
+                state.totalTime = state.timeLeft;
+                
+                // Update UI
+                timerStatus.textContent = "Tayyorlaning";
+                phaseIndicator.textContent = "Qur'on o'qish vaqti";
+                phaseIndicator.className = "mt-4 px-4 py-1 rounded-full text-sm glass-effect-dark";
+                
+                // Show notification
+                showNotification("Tanaffus tugadi!", "Endi yana Qur'on o'qish vaqti. Keyingi sessiyani boshlashga tayyormisiz?");
+                
+                // Play sound
+                playStartSound();
+                
+                // Update motivation
+                updateMotivation();
+            }
+            
+            // Update UI
+            startBtn.classList.remove('hidden');
+            pauseBtn.classList.add('hidden');
+            
+            // Update statistics
+            updateStatistics();
+            updateGoalProgress();
+            saveToLocalStorage();
+        }
+
+        // Motivation functions
+        function updateMotivation(isBreak = false) {
+            if (isBreak) {
+                // Show break motivation
+                const breakIndex = Math.floor(Math.random() * state.breakMotivations.length);
+                motivationText.textContent = state.breakMotivations[breakIndex];
+            } else {
+                // Show regular motivation
+                motivationText.textContent = state.motivations[state.currentMotivationIndex];
+            }
+            
+            // Add animation
+            motivationText.classList.remove('motivation-card');
+            void motivationText.offsetWidth; // Trigger reflow
+            motivationText.classList.add('motivation-card');
+        }
+
+        function nextMotivation() {
+            state.currentMotivationIndex = (state.currentMotivationIndex + 1) % state.motivations.length;
+            updateMotivation(state.isBreak);
+            saveToLocalStorage();
+        }
+
+        // Statistics functions
+        function updateStatistics() {
+            sessionCountEl.textContent = state.sessionCount;
+            totalTimeEl.textContent = state.totalMinutes;
+            completedSessionsEl.textContent = state.sessionCount;
+            totalMinutesEl.textContent = state.totalMinutes;
+            streakDaysEl.textContent = state.streakDays;
+            todayGoalEl.textContent = state.todayGoal;
+            todayGoalProgressEl.textContent = state.todaySessions;
+        }
+
+        function updateGoalProgress() {
+            const progress = Math.min((state.todaySessions / state.todayGoal) * 100, 100);
+            goalProgressBar.style.width = `${progress}%`;
+        }
+
+        function checkStreak() {
+            const today = new Date().toDateString();
+            
+            if (state.lastSessionDate !== today) {
+                // Check if yesterday was also a session day
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toDateString();
+                
+                if (state.lastSessionDate === yesterdayStr) {
+                    // Continue streak
+                    state.streakDays++;
+                } else if (state.lastSessionDate && state.lastSessionDate !== today) {
+                    // Streak broken
+                    state.streakDays = 0;
+                }
+                
+                // Reset today's sessions if it's a new day
+                if (state.lastSessionDate !== today) {
+                    state.todaySessions = 0;
+                }
+            }
+        }
+
+        function updateStreak() {
+            const today = new Date().toDateString();
+            
+            if (state.lastSessionDate !== today) {
+                // Check if yesterday was also a session day
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toDateString();
+                
+                if (state.lastSessionDate === yesterdayStr) {
+                    // Continue streak
+                    state.streakDays++;
+                } else if (state.lastSessionDate && state.lastSessionDate !== today) {
+                    // Streak broken
+                    state.streakDays = 1;
+                } else {
+                    // First session or streak starts today
+                    state.streakDays = state.streakDays === 0 ? 1 : state.streakDays;
+                }
+                
+                state.lastSessionDate = today;
+            }
+        }
+
+        // Notification function
+        function showNotification(title, message) {
+            notificationTitle.textContent = title;
+            notificationMessage.textContent = message;
+            
+            notification.classList.remove('hidden');
+            notification.classList.add('notification');
+            
+            // Show audio visualization
+            if (state.soundEnabled) {
+                audioVisualization.classList.remove('hidden');
+                setTimeout(() => {
+                    audioVisualization.classList.add('hidden');
+                }, 3000);
+            }
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Audio functions using Web Audio API
+        function playCompletionSound() {
+            if (!state.soundEnabled) return;
+            
+            try {
+                // Create audio context if it doesn't exist
+                if (!state.audioContext) {
+                    state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                // Create oscillator for a pleasant chime sound
+                state.oscillator = state.audioContext.createOscillator();
+                state.gainNode = state.audioContext.createGain();
+                
+                // Configure oscillator
+                state.oscillator.type = 'sine';
+                state.oscillator.frequency.setValueAtTime(523.25, state.audioContext.currentTime); // C5
+                state.oscillator.frequency.exponentialRampToValueAtTime(659.25, state.audioContext.currentTime + 0.5); // E5
+                
+                // Configure gain (volume) envelope
+                state.gainNode.gain.setValueAtTime(0, state.audioContext.currentTime);
+                state.gainNode.gain.linearRampToValueAtTime(0.3, state.audioContext.currentTime + 0.1);
+                state.gainNode.gain.exponentialRampToValueAtTime(0.001, state.audioContext.currentTime + 1.5);
+                
+                // Connect nodes
+                state.oscillator.connect(state.gainNode);
+                state.gainNode.connect(state.audioContext.destination);
+                
+                // Play sound
+                state.oscillator.start();
+                state.oscillator.stop(state.audioContext.currentTime + 1.5);
+                
+                // Clean up
+                state.oscillator.onended = () => {
+                    state.oscillator = null;
+                    state.gainNode = null;
+                };
+            } catch (error) {
+                console.log("Audio error:", error);
+                // If audio fails, just continue silently
+            }
+        }
+
+        function playStartSound() {
+            if (!state.soundEnabled) return;
+            
+            try {
+                // Create audio context if it doesn't exist
+                if (!state.audioContext) {
+                    state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                // Create oscillator for a pleasant start sound
+                state.oscillator = state.audioContext.createOscillator();
+                state.gainNode = state.audioContext.createGain();
+                
+                // Configure oscillator
+                state.oscillator.type = 'sine';
+                state.oscillator.frequency.setValueAtTime(392.00, state.audioContext.currentTime); // G4
+                state.oscillator.frequency.exponentialRampToValueAtTime(523.25, state.audioContext.currentTime + 0.3); // C5
+                
+                // Configure gain (volume) envelope
+                state.gainNode.gain.setValueAtTime(0, state.audioContext.currentTime);
+                state.gainNode.gain.linearRampToValueAtTime(0.2, state.audioContext.currentTime + 0.05);
+                state.gainNode.gain.exponentialRampToValueAtTime(0.001, state.audioContext.currentTime + 0.8);
+                
+                // Connect nodes
+                state.oscillator.connect(state.gainNode);
+                state.gainNode.connect(state.audioContext.destination);
+                
+                // Play sound
+                state.oscillator.start();
+                state.oscillator.stop(state.audioContext.currentTime + 0.8);
+                
+                // Clean up
+                state.oscillator.onended = () => {
+                    state.oscillator = null;
+                    state.gainNode = null;
+                };
+            } catch (error) {
+                console.log("Audio error:", error);
+                // If audio fails, just continue silently
+            }
+        }
+
+        function stopSound() {
+            if (state.oscillator) {
+                try {
+                    state.oscillator.stop();
+                } catch (error) {
+                    // Already stopped
+                }
+                state.oscillator = null;
+                state.gainNode = null;
+            }
+        }
+
+        // Initialize the app
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // Handle page visibility changes to ensure timer accuracy
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible' && state.isRunning && state.startTime) {
+                // Recalculate time left based on actual elapsed time
+                const now = Date.now();
+                const elapsed = (now - state.startTime) / 1000;
+                state.timeLeft = Math.max(state.totalTime - Math.floor(elapsed), 0);
+                state.lastUpdate = now;
+                
+                // If timer finished while tab was hidden
+                if (state.timeLeft <= 0) {
+                    timerFinished();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
