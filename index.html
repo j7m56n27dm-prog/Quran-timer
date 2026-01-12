@@ -3,107 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Groq AI Yordamchi (v2)</title>
+    <title>Groq AI (Fixed)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1f2937; }
-        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
         
-        .markdown-body p { margin-bottom: 0.8rem; }
-        .markdown-body h1, .markdown-body h2 { font-weight: bold; margin-top: 1rem; color: #93c5fd; }
-        .markdown-body ul { list-style-type: disc; margin-left: 1.5rem; }
-        .markdown-body pre { background: #111827; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; border: 1px solid #374151; margin: 1rem 0; }
-        .markdown-body code { font-family: monospace; color: #e5e7eb; }
+        .markdown-body p { margin-bottom: 0.8rem; line-height: 1.6; }
+        .markdown-body h1, .markdown-body h2 { font-weight: bold; margin-top: 1rem; color: #60a5fa; }
+        .markdown-body ul { list-style-type: disc; margin-left: 1.2rem; }
+        .markdown-body pre { background: #1f2937; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 0.5rem 0; border: 1px solid #374151; }
+        .markdown-body code { font-family: monospace; color: #e5e7eb; background: #374151; padding: 2px 4px; border-radius: 4px; }
+        .markdown-body pre code { background: transparent; padding: 0; }
         
-        .loader {
-            border: 3px solid #f3f3f3;
+        .typing-indicator span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #9ca3af;
             border-radius: 50%;
-            border-top: 3px solid #3b82f6;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
+            animation: typing 1.4s infinite ease-in-out both;
+            margin: 0 2px;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col font-sans">
+<body class="bg-gray-950 text-gray-100 h-screen flex flex-col font-sans overflow-hidden">
 
     <!-- Header -->
-    <header class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold text-blue-400 flex items-center gap-2">
-                <i class="fa-solid fa-robot"></i> Groq AI
+    <header class="bg-gray-900 border-b border-gray-800 p-3 shadow-md z-10">
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
+            <h1 class="text-lg font-bold text-blue-500 flex items-center gap-2">
+                <i class="fa-solid fa-brain"></i> Groq AI
             </h1>
-            <div class="text-xs text-gray-500">v2.0 (Debug Mode)</div>
+            <button onclick="toggleSettings()" class="text-gray-400 hover:text-white">
+                <i class="fa-solid fa-gear"></i> Sozlamalar
+            </button>
         </div>
     </header>
 
-    <main class="flex-grow max-w-4xl mx-auto w-full p-4 flex flex-col gap-4">
+    <!-- Settings Panel (Initially Hidden) -->
+    <div id="settingsPanel" class="hidden bg-gray-900 border-b border-gray-800 p-4 shadow-lg absolute w-full top-[53px] z-20">
+        <div class="max-w-3xl mx-auto space-y-4">
+            
+            <!-- API Key Input -->
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">API Key (gsk_...)</label>
+                <div class="flex gap-2">
+                    <input type="password" id="apiKey" 
+                        class="w-full bg-gray-800 text-white border border-gray-700 rounded px-3 py-2 text-sm focus:border-blue-500 outline-none"
+                        placeholder="Kalitni shu yerga qo'ying...">
+                    <button onclick="toggleKeyVisibility()" class="bg-gray-800 border border-gray-700 px-3 rounded text-gray-400 hover:text-white">
+                        <i class="fa-solid fa-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
+            </div>
 
-        <!-- 1. API Key Section (CRITICAL) -->
-        <div class="bg-gray-800 p-4 rounded-lg border border-blue-900 shadow-lg">
-            <label class="block text-blue-300 text-sm font-bold mb-2">
-                1-QADAM: API Kalitni shu yerga qo'ying
-            </label>
-            <div class="flex gap-2">
-                <input type="password" id="apiKey" 
-                    class="flex-grow bg-gray-900 text-white border border-gray-600 rounded p-2 focus:border-blue-500 focus:outline-none"
-                    placeholder="gsk_..." 
-                    value=""> <!-- Xavfsizlik uchun bo'sh qoldirildi -->
-                <button onclick="toggleVisibility()" class="bg-gray-700 px-3 rounded text-gray-300 hover:bg-gray-600">
-                    <i class="fa-solid fa-eye" id="eyeIcon"></i>
+            <!-- Model Selector -->
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">Modelni tanlash</label>
+                <select id="modelSelect" class="w-full bg-gray-800 text-white border border-gray-700 rounded px-3 py-2 text-sm focus:border-blue-500 outline-none">
+                    <option value="llama-3.3-70b-versatile" selected>Llama 3.3 70B (Eng yangi & Kuchli)</option>
+                    <option value="llama-3.1-8b-instant">Llama 3.1 8B (Juda tez)</option>
+                    <option value="mixtral-8x7b-32768">Mixtral 8x7B (Eski lekin yaxshi)</option>
+                    <option value="gemma2-9b-it">Gemma 2 9B (Google)</option>
+                </select>
+                <p class="text-[10px] text-gray-500 mt-1">Agar "Decommissioned" xatosi chiqsa, boshqa modelni tanlang.</p>
+            </div>
+
+            <button onclick="toggleSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded text-sm font-semibold transition">
+                Saqlash va Yopish
+            </button>
+        </div>
+    </div>
+
+    <!-- Chat Area -->
+    <main class="flex-grow flex flex-col max-w-3xl w-full mx-auto relative">
+        
+        <!-- Messages -->
+        <div id="chatContainer" class="flex-grow overflow-y-auto p-4 space-y-4 pb-20">
+            <!-- Welcome Message -->
+            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 text-sm text-gray-300">
+                <h3 class="font-bold text-white mb-2">👋 Xush kelibsiz!</h3>
+                <p>Ishlashni boshlash uchun:</p>
+                <ol class="list-decimal ml-4 mt-1 space-y-1">
+                    <li>Tepadagi <i class="fa-solid fa-gear"></i> <b>Sozlamalar</b> tugmasini bosing.</li>
+                    <li>API kalitingizni kiriting.</li>
+                    <li>"Saqlash"ni bosing va yozishni boshlang!</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Typing Indicator -->
+        <div id="typingIndicator" class="hidden px-4 py-2">
+            <div class="bg-gray-900 inline-block px-4 py-2 rounded-full border border-gray-800">
+                <div class="typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-3 bg-gray-950 border-t border-gray-800">
+            <div class="relative max-w-3xl mx-auto flex gap-2">
+                <textarea id="promptInput" rows="1" 
+                    class="w-full bg-gray-900 text-white border border-gray-700 rounded-2xl px-4 py-3 focus:border-blue-500 focus:outline-none resize-none shadow-sm"
+                    placeholder="Xabar yozing..." 
+                    style="min-height: 48px; max-height: 120px;"></textarea>
+                
+                <button onclick="sendMessage()" id="sendBtn"
+                    class="bg-blue-600 hover:bg-blue-500 text-white w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-arrow-up"></i>
                 </button>
             </div>
-            <p class="text-xs text-gray-500 mt-1">
-                Siz bergan kalit: <code>gsk_...F4MprJ</code> (shuni nusxalab tepaga qo'ying)
-            </p>
         </div>
-
-        <!-- 2. Chat Area -->
-        <div class="flex-grow bg-gray-800 rounded-lg border border-gray-700 flex flex-col min-h-[400px]">
-            <!-- Messages Log -->
-            <div id="chatLog" class="flex-grow p-4 overflow-y-auto space-y-4">
-                <div class="bg-blue-900/30 p-3 rounded-lg border border-blue-800 text-sm text-blue-200">
-                    👋 Salom! Men Groq AI yordamchisiman. Ishlatish uchun tepaga API kalitingizni kiriting va pastda savol yozing.
-                </div>
-            </div>
-
-            <!-- Error Display Area -->
-            <div id="errorArea" class="hidden bg-red-900/80 p-3 text-red-100 text-sm text-center border-t border-red-700">
-                <!-- Error message will go here -->
-            </div>
-
-            <!-- Input Area -->
-            <div class="p-4 border-t border-gray-700 bg-gray-800 rounded-b-lg">
-                <div class="relative">
-                    <textarea id="prompt" rows="2" 
-                        class="w-full bg-gray-900 text-white border border-gray-600 rounded-lg p-3 pr-12 focus:border-blue-500 focus:outline-none resize-none"
-                        placeholder="Savolingizni yozing (masalan: React nima?)..."></textarea>
-                    
-                    <button id="sendBtn" onclick="sendMessage()" 
-                        class="absolute right-2 bottom-2 bg-blue-600 hover:bg-blue-500 text-white p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        <i class="fa-solid fa-paper-plane"></i>
-                    </button>
-                    
-                    <div id="loadingIndicator" class="hidden absolute right-12 bottom-3">
-                        <div class="loader"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </main>
 
     <script>
-        // System prompt setup
-        const SYSTEM_PROMPT = "You are a helpful AI assistant. Answer in Uzbek language explicitly.";
+        const SYSTEM_PROMPT = "You are a helpful AI assistant created by Groq. Answer in the same language as the user (mostly Uzbek). Be concise and helpful.";
 
-        // Toggle API Key visibility
-        function toggleVisibility() {
+        // Auto-resize textarea
+        const textarea = document.getElementById('promptInput');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Toggle Settings
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('hidden');
+        }
+
+        // Toggle Key Visibility
+        function toggleKeyVisibility() {
             const input = document.getElementById('apiKey');
             const icon = document.getElementById('eyeIcon');
             if (input.type === 'password') {
@@ -115,58 +157,71 @@
             }
         }
 
-        function appendMessage(role, text, isError = false) {
-            const chatLog = document.getElementById('chatLog');
+        // Add Message to Chat
+        function addMessage(role, content, isError = false) {
+            const container = document.getElementById('chatContainer');
             const div = document.createElement('div');
             
             if (role === 'user') {
-                div.className = "bg-gray-700 text-white p-3 rounded-lg self-end ml-10 border border-gray-600";
-                div.innerText = text;
+                div.className = "flex justify-end";
+                div.innerHTML = `
+                    <div class="bg-blue-600 text-white px-4 py-2 rounded-2xl rounded-tr-sm max-w-[85%] shadow-md">
+                        ${content.replace(/\n/g, '<br>')}
+                    </div>
+                `;
             } else if (isError) {
-                div.className = "bg-red-900/50 text-red-200 p-3 rounded-lg border border-red-800 text-sm";
-                div.innerHTML = `<strong class="block mb-1"><i class="fa-solid fa-triangle-exclamation"></i> Xatolik:</strong> ${text}`;
+                div.className = "flex justify-center";
+                div.innerHTML = `
+                    <div class="bg-red-900/80 text-red-100 text-sm px-4 py-2 rounded-xl border border-red-700 max-w-[90%] text-center shadow">
+                        <i class="fa-solid fa-circle-exclamation mr-1"></i> ${content}
+                    </div>
+                `;
             } else {
-                div.className = "bg-gray-900/50 text-gray-100 p-4 rounded-lg mr-10 border border-gray-700 markdown-body";
-                div.innerHTML = marked.parse(text);
+                div.className = "flex justify-start w-full";
+                div.innerHTML = `
+                    <div class="bg-gray-800 text-gray-100 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[90%] border border-gray-700 shadow-md markdown-body">
+                        ${marked.parse(content)}
+                    </div>
+                `;
             }
             
-            chatLog.appendChild(div);
-            chatLog.scrollTop = chatLog.scrollHeight;
+            container.appendChild(div);
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
         }
 
+        // Main Send Function
         async function sendMessage() {
+            const promptInput = document.getElementById('promptInput');
             const apiKeyInput = document.getElementById('apiKey');
-            const promptInput = document.getElementById('prompt');
-            const errorArea = document.getElementById('errorArea');
+            const modelSelect = document.getElementById('modelSelect');
             const sendBtn = document.getElementById('sendBtn');
-            const loading = document.getElementById('loadingIndicator');
+            const loading = document.getElementById('typingIndicator');
 
-            const apiKey = apiKeyInput.value.trim();
             const text = promptInput.value.trim();
+            const apiKey = apiKeyInput.value.trim();
+            const model = modelSelect.value;
 
-            // Reset Errors
-            errorArea.classList.add('hidden');
-            errorArea.innerText = '';
-
-            // Validation
+            // 1. Check API Key
             if (!apiKey) {
-                errorArea.innerText = "⚠️ Iltimos, API Kalitni kiriting! (Tepadagi maydon)";
-                errorArea.classList.remove('hidden');
+                toggleSettings();
                 apiKeyInput.focus();
-                apiKeyInput.classList.add('border-red-500');
-                setTimeout(() => apiKeyInput.classList.remove('border-red-500'), 2000);
+                apiKeyInput.classList.add('border-red-500', 'ring-1', 'ring-red-500');
+                setTimeout(() => apiKeyInput.classList.remove('border-red-500', 'ring-1', 'ring-red-500'), 2000);
                 return;
             }
 
             if (!text) return;
 
-            // UI Updates
+            // 2. UI Updates
             promptInput.value = '';
-            appendMessage('user', text);
+            promptInput.style.height = 'auto'; // Reset height
             sendBtn.disabled = true;
-            loading.classList.remove('hidden');
+            addMessage('user', text);
+            loading.classList.remove('hidden'); // Show typing indicator
+            document.getElementById('chatContainer').scrollTop = document.getElementById('chatContainer').scrollHeight;
 
             try {
+                // 3. API Call
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
                     headers: {
@@ -174,7 +229,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: "llama3-8b-8192",
+                        model: model, // Using the selected model
                         messages: [
                             { role: "system", content: SYSTEM_PROMPT },
                             { role: "user", content: text }
@@ -186,29 +241,34 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    let errorMsg = "Noma'lum xatolik";
-                    if (data.error) errorMsg = data.error.message;
-                    if (response.status === 401) errorMsg = "API Kalit noto'g'ri (401 Unauthorized). Kalitni tekshiring.";
-                    if (response.status === 429) errorMsg = "Limit tugadi (Rate Limit). Biroz kuting.";
-                    
+                    const errorMsg = data.error?.message || "Noma'lum xatolik yuz berdi";
                     throw new Error(errorMsg);
                 }
 
-                const aiReply = data.choices[0].message.content;
-                appendMessage('ai', aiReply);
+                // 4. Success
+                const aiResponse = data.choices[0].message.content;
+                addMessage('ai', aiResponse);
 
-            } catch (err) {
-                console.error(err);
-                appendMessage('ai', `Uzur, so'rovni bajarib bo'lmadi.\n\nSababi: **${err.message}**`, true);
+            } catch (error) {
+                console.error(error);
+                let displayError = error.message;
+                
+                // Friendly error messages
+                if (displayError.includes('401')) displayError = "API Kalit xato. Iltimos tekshirib qayta kiriting.";
+                if (displayError.includes('not found') || displayError.includes('decommissioned')) {
+                    displayError = `Tanlangan model (${model}) ishlamayapti. Iltimos, "Sozlamalar"dan boshqa modelni tanlang.`;
+                }
+                
+                addMessage('system', displayError, true);
             } finally {
-                sendBtn.disabled = false;
                 loading.classList.add('hidden');
-                document.getElementById('prompt').focus();
+                sendBtn.disabled = false;
+                promptInput.focus();
             }
         }
 
-        // Enter key to send
-        document.getElementById('prompt').addEventListener('keydown', (e) => {
+        // Enter to send
+        document.getElementById('promptInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
